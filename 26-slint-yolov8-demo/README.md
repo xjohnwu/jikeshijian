@@ -41,3 +41,8 @@ cargo run --release
 ```
 
 You will look at a GUI app popped up, good luck!
+
+
+# 思考题
+
+这节课的代码实现有一个性能上的问题，就是每次点击 Detect Objects 或 Detect Poses 的时候，实际上都重复加载了模型，你想一想如何优化这个点？欢迎你把你的想法和优化代码分享到评论区，如果你觉得对你有帮助的话，也欢迎你把这节课的内容分享给其他朋友，我们下节课再见！

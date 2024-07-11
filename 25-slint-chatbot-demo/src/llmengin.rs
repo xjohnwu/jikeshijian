@@ -1,5 +1,3 @@
-
-
 #[cfg(feature = "mkl")]
 extern crate intel_mkl_src;
 
@@ -44,7 +42,10 @@ impl Args {
     }
 }
 
-pub fn start_engine(ui_handle: slint::Weak<crate::AppWindow>, receiver: std::sync::mpsc::Receiver<String>) -> anyhow::Result<()> {
+pub fn start_engine(
+    ui_handle: slint::Weak<crate::AppWindow>,
+    receiver: std::sync::mpsc::Receiver<String>,
+) -> anyhow::Result<()> {
     let msg = format!(
         "avx: {}, neon: {}, simd128: {}, f16c: {}",
         utils::with_avx(),
@@ -76,7 +77,7 @@ pub fn start_engine(ui_handle: slint::Weak<crate::AppWindow>, receiver: std::syn
     for (_, tensor) in model.tensor_infos.iter() {
         let elem_count = tensor.shape.elem_count();
         total_size_in_bytes +=
-            elem_count * tensor.ggml_dtype.type_size() / tensor.ggml_dtype.blck_size();
+            elem_count * tensor.ggml_dtype.type_size() / tensor.ggml_dtype.block_size();
     }
     let msg = format!(
         "loaded {:?} tensors ({}bytes) in {:.2}s",
@@ -86,7 +87,7 @@ pub fn start_engine(ui_handle: slint::Weak<crate::AppWindow>, receiver: std::syn
     );
     super::update_dialog(ui_handle.clone(), msg);
     super::update_dialog(ui_handle.clone(), "loading model...".to_string());
-    let mut model = quantized_model::ModelWeights::from_gguf(model, &mut file)?;
+    let mut model = quantized_model::ModelWeights::from_gguf(model, &mut file, &Device::Cpu)?;
     let msg = format!("model built.");
     super::update_dialog(ui_handle.clone(), msg);
 
@@ -97,7 +98,7 @@ pub fn start_engine(ui_handle: slint::Weak<crate::AppWindow>, receiver: std::syn
     for _prompt_index in 0.. {
         // print!("> ");
         super::update_dialog_without_ln(ui_handle.clone(), "> ".to_string());
-        
+
         let ask = receiver.recv().unwrap();
         if ask == "_exit_" {
             return Err(anyhow::anyhow!("exit".to_string()));
